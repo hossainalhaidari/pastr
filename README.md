@@ -38,3 +38,7 @@ In response, you will see something like the following; which is your shortened 
 `https://example.com/85`
 
 If you used a URL as the content, then by opening the shortened link you will be redirected to the original URL; otherwise it will be displayed as plain text.
+
+## Demo
+
+A demo is available at [pastr.xyz](https://pastr.xyz)
