@@ -39,6 +39,9 @@ def is_url(content):
 
 @app.route("/", methods = ['GET', 'POST'])
 def index():
+    if request.method == 'GET':
+        return Response("usage: " + request.url_root + "=XYZ\n\nReplace XYZ with your own text or URL.", mimetype=mime)
+
     if request.method == 'POST':
         try:
             data = request.get_data().decode("utf-8")
