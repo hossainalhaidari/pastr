@@ -11,7 +11,7 @@
 ```
 - In response, you will see something like the following; which is your shortened URL:
 ```
-    http://localhost:3000/104`  
-    http://localhost:3000/85`
+    http://localhost:3000/b5rc
+    http://localhost:3000/df3e
 ```
 - If you used a URL as the content, then by opening the shortened link you will be redirected to the original URL; otherwise it will be displayed as plain text.
