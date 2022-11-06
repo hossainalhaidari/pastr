@@ -1,0 +1,9 @@
+[package]
+name = "pastr"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+rand = "0.8.5"
+rocket = "0.5.0-rc.2"
+url = "2.2.2"
