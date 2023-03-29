@@ -1,9 +1,9 @@
 # pastr
-**pastr** is a super-minimal URL shortener and paste tool (with no dependencies) that has a dead-simple convention for using it.
+**pastr** is a minimal URL shortener and paste tool that has a dead-simple convention for using it.
 
 ## Usage
 
-- Run `./app.ts` to start the server locally at `http://localhost:3000`.
+- Run `go run .` to start the server locally at `http://localhost:3000`.
 - Call the API by prepending `=` before the content you want to shorten:
 ```
     http://localhost:3000/=Hello, World!
