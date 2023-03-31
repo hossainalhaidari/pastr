@@ -2,49 +2,61 @@ package main
 
 import (
 	"bufio"
+	"fmt"
+	"math/rand"
 	"net/http"
 	"net/url"
 	"os"
+	"strconv"
 	"strings"
-
-	"github.com/dchest/uniuri"
-	"github.com/labstack/echo/v4"
-	"github.com/labstack/echo/v4/middleware"
+	"time"
 )
 
 const DbFile = "data.db"
 
+var letters = []rune("abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789")
+var host = ""
+var keyLength = 4
+
+func init() {
+	rand.Seed(time.Now().UnixNano())
+	host = os.Getenv("PASTR_HOST")
+	newKeyLength, err := strconv.Atoi(os.Getenv("PASTR_KEY_LENGTH"))
+	if err == nil && newKeyLength >= 4 && newKeyLength <= 12 {
+		keyLength = newKeyLength
+	}
+}
+
 func main() {
-	e := echo.New()
-	e.Use(middleware.Recover())
-	e.Use(middleware.CORS())
+	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		query := r.URL.Path[1:]
 
-	host := os.Getenv("PASTR_HOST")
+		if query != "" {
+			if strings.HasPrefix(query, "=") {
+				key, err := setKey(query[1:])
+				if err == nil {
+					fmt.Fprint(w, combine(host, key))
+					return
+				}
+			} else {
+				value, err := getKey(query)
 
-	e.GET("/", func(c echo.Context) error {
-		return c.String(http.StatusOK, "Hi!")
-	})
-	e.GET("/=:value", func(c echo.Context) error {
-		key, err := setKey(c.ParamValues()[0])
-		if err != nil {
-			return echo.NewHTTPError(http.StatusNotFound)
+				if err == nil && value != "" {
+					if isUrl(value) {
+						http.Redirect(w, r, value, http.StatusFound)
+					}
+
+					fmt.Fprint(w, value)
+					return
+				}
+			}
+
 		}
-		return c.String(http.StatusOK, combine(host, key))
-	})
-	e.GET("/:key", func(c echo.Context) error {
-		value, err := getKey(c.ParamValues()[0])
-		if err != nil || value == "" {
-			return echo.NewHTTPError(http.StatusNotFound)
-		}
 
-		if isUrl(value) {
-			return c.Redirect(302, value)
-		}
-
-		return c.String(http.StatusOK, value)
+		w.WriteHeader(http.StatusNotFound)
 	})
 
-	e.Logger.Fatal(e.Start(":3000"))
+	http.ListenAndServe(":3000", nil)
 }
 
 func getKey(key string) (string, error) {
@@ -72,7 +84,7 @@ func setKey(value string) (string, error) {
 	}
 	defer file.Close()
 
-	key := uniuri.NewLen(4)
+	key := genKey()
 	for {
 		content, err := getKey(key)
 		if err != nil {
@@ -83,7 +95,7 @@ func setKey(value string) (string, error) {
 			break
 		}
 
-		key = uniuri.NewLen(4)
+		key = genKey()
 	}
 	_, err2 := file.WriteString(key + " " + value + "\n")
 
@@ -105,4 +117,12 @@ func combine(host string, key string) string {
 		return key
 	}
 	return url
+}
+
+func genKey() string {
+	bytes := make([]rune, keyLength)
+	for i := range bytes {
+		bytes[i] = letters[rand.Intn(len(letters))]
+	}
+	return string(bytes)
 }
