@@ -1,6 +1,10 @@
-#!/usr/bin/env -S deno run --allow-net --allow-read --allow-write
+#!/usr/bin/env -S deno run --allow-net --allow-read --allow-write --allow-env
 
-import { serve } from "https://deno.land/std@0.161.0/http/server.ts";
+import { serve } from "https://deno.land/std/http/server.ts";
+import * as path from "https://deno.land/std/path/mod.ts";
+
+const PASTR_HOST = Deno.env.get("PASTR_HOST");
+const PASTR_KEY_LENGTH = Deno.env.get("PASTR_KEY_LENGTH") ?? "4";
 
 const getPath = (code: string) => `data/${code}`;
 
@@ -14,7 +18,8 @@ const exists = async (filename: string) => {
 };
 
 const rand = () => {
-  const buf = new Uint8Array(2);
+  const length = parseInt(PASTR_KEY_LENGTH) / 2;
+  const buf = new Uint8Array(length);
   crypto.getRandomValues(buf);
   let ret = "";
   for (let i = 0; i < buf.length; ++i) {
@@ -48,11 +53,11 @@ const isURL = (content: string) => {
 const create = async (content: string) => {
   const code = await getCode();
   await Deno.writeTextFile(getPath(code), content);
-  return code;
+  return path.join(PASTR_HOST, code);
 };
 
 const handler = async (req: Request): Promise<Response> => {
-  const { pathname } = new URL(req.url, "http://127.0.0.1/");
+  const { pathname } = new URL(req.url, PASTR_HOST);
 
   if (pathname === "/") {
     return new Response("Hi!", { status: 200 });

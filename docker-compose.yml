@@ -1,0 +1,13 @@
+version: "3.3"
+services:
+  pastr:
+    image: denoland/deno:alpine
+    command: deno run --allow-net --allow-read --allow-write --allow-env app.ts
+    working_dir: /usr/src/app
+    volumes:
+      - $PWD:/usr/src/app
+    environment:
+      - PASTR_HOST=http://localhost:3000
+      - PASTR_KEY_LENGTH=4
+    ports:
+      - "3000:3000"
