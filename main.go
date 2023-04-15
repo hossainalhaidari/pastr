@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"math/rand"
 	"net/http"
 	"net/url"
@@ -29,31 +30,34 @@ func init() {
 
 func main() {
 	http.HandleFunc("/", func(w http.ResponseWriter, r *http.Request) {
+		if r.Method == "POST" {
+			defer r.Body.Close()
+			body, _ := io.ReadAll(r.Body)
+			key, err := setKey(string(body))
+			if err == nil {
+				fmt.Fprint(w, combine(host, key))
+			}
+			return
+		}
+
 		query := r.URL.Path[1:]
+		if query == "" {
+			http.ServeFile(w, r, "index.html")
+			return
+		}
 
-		if query != "" {
-			if strings.HasPrefix(query, "=") {
-				key, err := setKey(query[1:])
-				if err == nil {
-					fmt.Fprint(w, combine(host, key))
-					return
-				}
-			} else {
-				value, err := getKey(query)
-
-				if err == nil && value != "" {
-					if isUrl(value) {
-						http.Redirect(w, r, value, http.StatusFound)
-					}
-
-					fmt.Fprint(w, value)
-					return
-				}
+		value, err := getKey(query)
+		if err == nil && value != "" {
+			if isUrl(value) {
+				http.Redirect(w, r, value, http.StatusFound)
 			}
 
+			fmt.Fprint(w, value)
+			return
 		}
 
 		w.WriteHeader(http.StatusNotFound)
+		fmt.Fprint(w, "Not Found")
 	})
 
 	http.ListenAndServe(":3000", nil)
