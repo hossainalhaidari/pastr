@@ -22,4 +22,3 @@
 ```
 
 - If you used a URL as the content, then by opening the shortened link you will be redirected to the original URL; otherwise it will be displayed as plain text.
-- For docker usage, check the `docker-compose.yml` file.
