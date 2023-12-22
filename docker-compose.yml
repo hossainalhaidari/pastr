@@ -2,7 +2,7 @@ version: "3.3"
 services:
   pastr:
     container_name: pastr
-    image: hossainalhaidari/pastr
+    image: pastr
     restart: always
     ports:
       - "3000:3000"
